@@ -150,6 +150,9 @@ Ambil Foto LJK
 <button class="secondary" onclick="stopCamera()">
 Tutup Kamera
 </button>
+<button class="danger" onclick="deleteLJK()">
+Hapus Foto
+</button>
 </div>
 
 <div id="previewArea" style="display:none;margin-top:15px">
@@ -303,12 +306,26 @@ let currentLJK = null;
 
 async function startCamera(){
  try{
-  const video=document.getElementById("camera");
+   const video=document.getElementById("camera");
 
-  cameraStream=await navigator.mediaDevices.getUserMedia({
-   video:{facingMode:"environment"},
-   audio:false
+   cameraStream=await navigator.mediaDevices.getUserMedia({
+    video:{
+      facingMode:{ideal:"environment"},
+      width:{ideal:1920},
+      height:{ideal:1080},
+      frameRate:{ideal:30}
+    },
+    audio:false
   });
+
+   video.srcObject=cameraStream;
+   video.style.display="block";
+   document.getElementById("captureButton").style.display="inline-block";
+
+  }catch(error){
+   alert("Kamera tidak dapat dibuka. Periksa izin kamera atau gunakan unggah foto.");
+ }
+}
 
   video.srcObject=cameraStream;
   video.style.display="block";
