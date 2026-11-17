@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LJK SAS Scan - 50 Soal</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;color:#111;margin:0;background:#eee}
+.paper{background:white;width:210mm;min-height:297mm;margin:15px auto;padding:12mm}
+h1{text-align:center;font-size:19px;margin:0 0 4px}
+.subtitle{text-align:center;font-size:10px;margin-bottom:15px}
+.identity{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px}
+.field{border-bottom:1px solid #111;padding:7px 0}
+.instructions{font-size:10px;line-height:1.5;border:1px solid #333;padding:8px;margin:12px 0}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.question{display:flex;align-items:center;height:24px;border-bottom:1px solid #ddd;font-size:11px}
+.number{width:27px;font-weight:bold}
+.options{display:flex;gap:12px}
+.bubble{width:16px;height:16px;border:1.3px solid #111;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px}
+.marker{width:9mm;height:9mm;background:#000;position:absolute}
+.tl{top:5mm;left:5mm}.tr{top:5mm;right:5mm}
+.bl{bottom:5mm;left:5mm}.br{bottom:5mm;right:5mm}
+.paper{position:relative}
+@media print{
+ body{background:white}
+ .paper{margin:0;width:210mm;min-height:297mm;padding:12mm;page-break-after:always}
+ .no-print{display:none}
+}
+@page{size:A4;margin:0}
+</style>
+</head>
+<body>
+<div class="no-print" style="text-align:center;padding:12px">
+<button onclick="window.print()">Cetak / Simpan PDF</button>
+</div>
+<div class="paper">
+<div class="marker tl"></div>
+<div class="marker tr"></div>
+<div class="marker bl"></div>
+<div class="marker br"></div>
+
+<h1>LEMBAR JAWABAN KOMPUTER</h1>
+<div class="subtitle">SUMATIF AKHIR ASESMEN - SAS SCAN</div>
+
+<div class="identity">
+<div class="field">Nama: ........................................</div>
+<div class="field">Kelas: ........................................</div>
+<div class="field">Mata Pelajaran: ............................</div>
+<div class="field">Tanggal: ......................................</div>
+</div>
+
+<div class="instructions">
+<b>Petunjuk pengisian:</b><br>
+1. Gunakan pensil 2B untuk mengisi jawaban.<br>
+2. Hitamkan bulatan pilihan A, B, C, atau D dengan penuh.<br>
+3. Jangan melipat atau merusak lembar jawaban.<br>
+4. Pastikan hanya satu pilihan yang dihitamkan pada setiap nomor.
+</div>
+
+<div class="columns" id="questions"></div>
+
+<div style="text-align:center;font-size:9px;margin-top:14px">
+SAS SCAN | Lembar Jawaban 50 Soal | Jangan menulis di area penanda hitam
+</div>
+</div>
+
+<script>
+const container=document.getElementById("questions");
+for(let col=0;col<2;col++){
+ const section=document.createElement("div");
+ for(let i=col*25+1;i<=col*25+25;i++){
+  const row=document.createElement("div");
+  row.className="question";
+  row.innerHTML=`
+   <span class="number">${i}.</span>
+   <div class="options">
+    ${["A","B","C","D"].map(x=>
+     `<span class="bubble">${x}</span>`
+    ).join("")}
+   </div>`;
+  section.appendChild(row);
+ }
+ container.appendChild(section);
+}
+</script>
+</body>
+</html>
