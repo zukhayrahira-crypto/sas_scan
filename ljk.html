@@ -4,38 +4,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>LJK SAS Scan - 50 Soal</title>
+<title>SAS Scan - LJK 50 Soal</title>
+
 <style>
 *{box-sizing:border-box}
-body{font-family:Arial,sans-serif;color:#111;margin:0;background:#eee}
-.paper{background:white;width:210mm;min-height:297mm;margin:15px auto;padding:12mm}
-h1{text-align:center;font-size:19px;margin:0 0 4px}
-.subtitle{text-align:center;font-size:10px;margin-bottom:15px}
-.identity{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px}
-.field{border-bottom:1px solid #111;padding:7px 0}
-.instructions{font-size:10px;line-height:1.5;border:1px solid #333;padding:8px;margin:12px 0}
-.columns{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-.question{display:flex;align-items:center;height:24px;border-bottom:1px solid #ddd;font-size:11px}
-.number{width:27px;font-weight:bold}
-.options{display:flex;gap:12px}
-.bubble{width:16px;height:16px;border:1.3px solid #111;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px}
-.marker{width:9mm;height:9mm;background:#000;position:absolute}
-.tl{top:5mm;left:5mm}.tr{top:5mm;right:5mm}
-.bl{bottom:5mm;left:5mm}.br{bottom:5mm;right:5mm}
-.paper{position:relative}
+body{font-family:Arial,sans-serif;background:#eee;color:#111;margin:0}
+.controls{max-width:700px;margin:15px auto;background:white;padding:15px;border-radius:8px}
+.controls label{display:block;font-size:13px;margin-top:10px}
+.controls input{width:100%;padding:9px;margin-top:4px}
+button{padding:10px 18px;margin-top:15px;cursor:pointer}
+.paper{position:relative;background:white;width:210mm;height:297mm;margin:15px auto;padding:12mm;overflow:hidden}
+h1{text-align:center;font-size:18px;margin:0}
+.subtitle{text-align:center;font-size:10px;margin:4px 0 12px}
+.marker{position:absolute;width:9mm;height:9mm;background:#000}
+.tl{top:5mm;left:5mm}
+.tr{top:5mm;right:5mm}
+.bl{bottom:5mm;left:5mm}
+.br{bottom:5mm;right:5mm}
+
+.identity{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px}
+.field{border-bottom:1px solid;padding:6px 0}
+.id-section{border:1px solid #111;padding:8px;margin-top:9px}
+.id-title{font-weight:bold;font-size:12px;margin-bottom:5px}
+.id-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.digit-column{text-align:center}
+.digit-heading{font-weight:bold;font-size:11px;margin-bottom:4px}
+.digit-row{height:4.4mm;display:flex;align-items:center;justify-content:center;gap:9px;font-size:10px}
+.bubble{width:4.5mm;height:4.5mm;border:1px solid #111;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0}
+
+.instructions{font-size:9px;line-height:1.4;border:1px solid;padding:6px;margin:9px 0}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.question{display:flex;align-items:center;height:5.6mm;border-bottom:1px solid #ddd;font-size:10px}
+.number{width:25px;font-weight:bold}
+.options{display:flex;gap:10px}
+.answer{width:4.5mm;height:4.5mm;border:1px solid #111;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8px}
+.footer{text-align:center;font-size:8px;margin-top:8px}
+
 @media print{
  body{background:white}
- .paper{margin:0;width:210mm;min-height:297mm;padding:12mm;page-break-after:always}
- .no-print{display:none}
+ .controls{display:none}
+ .paper{margin:0;width:210mm;height:297mm;page-break-after:always}
 }
 @page{size:A4;margin:0}
 </style>
 </head>
+
 <body>
-<div class="no-print" style="text-align:center;padding:12px">
+
+<div class="controls">
+<h2>SAS SCAN - PENGATURAN LJK</h2>
+
+<label>Kelas yang akan dicetak</label>
+<input id="classInput" value="VII A">
+
+<label>Mata Pelajaran</label>
+<input id="subjectInput" value="Koding dan KA">
+
+<label>Tanggal</label>
+<input id="dateInput" type="date">
+
+<p style="font-size:12px;color:#555">
+Cetak LJK untuk satu kelas. Setiap siswa menggunakan nomor peserta unik 4 digit yang terdaftar di Excel.
+</p>
+
+<button onclick="updatePrint()">Perbarui LJK</button>
 <button onclick="window.print()">Cetak / Simpan PDF</button>
 </div>
+
 <div class="paper">
+
 <div class="marker tl"></div>
 <div class="marker tr"></div>
 <div class="marker bl"></div>
@@ -45,45 +82,93 @@ h1{text-align:center;font-size:19px;margin:0 0 4px}
 <div class="subtitle">SUMATIF AKHIR ASESMEN - SAS SCAN</div>
 
 <div class="identity">
-<div class="field">Nama: ........................................</div>
-<div class="field">Kelas: ........................................</div>
-<div class="field">Mata Pelajaran: ............................</div>
-<div class="field">Tanggal: ......................................</div>
+<div class="field">Nama: ....................................</div>
+<div class="field">Kelas: <b id="printClass">VII A</b></div>
+<div class="field">Mata Pelajaran: <b id="printSubject">Koding dan KA</b></div>
+<div class="field">Tanggal: <b id="printDate">........................</b></div>
+</div>
+
+<div class="id-section">
+<div class="id-title">
+NOMOR PESERTA (4 DIGIT)
+</div>
+<div style="font-size:9px;margin-bottom:6px">
+Hitamkan satu bulatan angka pada setiap kolom.
+</div>
+<div class="id-grid" id="digitGrid"></div>
 </div>
 
 <div class="instructions">
 <b>Petunjuk pengisian:</b><br>
-1. Gunakan pensil 2B untuk mengisi jawaban.<br>
-2. Hitamkan bulatan pilihan A, B, C, atau D dengan penuh.<br>
-3. Jangan melipat atau merusak lembar jawaban.<br>
-4. Pastikan hanya satu pilihan yang dihitamkan pada setiap nomor.
+1. Gunakan pensil 2B.<br>
+2. Hitamkan satu bulatan pada setiap kolom nomor peserta.<br>
+3. Hitamkan satu pilihan A, B, C, atau D pada setiap soal.<br>
+4. Isi bulatan secara penuh dan jangan membuat tanda silang.<br>
+5. Jangan melipat atau merusak lembar jawaban.
 </div>
 
 <div class="columns" id="questions"></div>
 
-<div style="text-align:center;font-size:9px;margin-top:14px">
-SAS SCAN | Lembar Jawaban 50 Soal | Jangan menulis di area penanda hitam
+<div class="footer">
+SAS SCAN | 50 SOAL | JANGAN MENULIS PADA AREA PENANDA HITAM
 </div>
+
 </div>
 
 <script>
+const grid=document.getElementById("digitGrid");
+
+for(let col=0;col<4;col++){
+ const section=document.createElement("div");
+ section.className="digit-column";
+ section.innerHTML=`<div class="digit-heading">Digit ${col+1}</div>`;
+
+ for(let digit=0;digit<=9;digit++){
+  const row=document.createElement("div");
+  row.className="digit-row";
+  row.innerHTML=`
+   <span>${digit}</span>
+   <span class="bubble" data-column="${col}" data-digit="${digit}"></span>
+  `;
+  section.appendChild(row);
+ }
+ grid.appendChild(section);
+}
+
 const container=document.getElementById("questions");
+
 for(let col=0;col<2;col++){
  const section=document.createElement("div");
+
  for(let i=col*25+1;i<=col*25+25;i++){
   const row=document.createElement("div");
   row.className="question";
   row.innerHTML=`
    <span class="number">${i}.</span>
    <div class="options">
-    ${["A","B","C","D"].map(x=>
-     `<span class="bubble">${x}</span>`
+    ${["A","B","C","D","E"].map(x=>
+     `<span class="answer">${x}</span>`
     ).join("")}
    </div>`;
   section.appendChild(row);
  }
  container.appendChild(section);
 }
+
+function updatePrint(){
+ document.getElementById("printClass").textContent=
+ document.getElementById("classInput").value;
+
+ document.getElementById("printSubject").textContent=
+ document.getElementById("subjectInput").value;
+
+ const date=document.getElementById("dateInput").value;
+ document.getElementById("printDate").textContent=
+ date || "........................";
+}
+
+updatePrint();
 </script>
+
 </body>
 </html>
