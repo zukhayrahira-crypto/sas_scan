@@ -114,6 +114,56 @@ footer{text-align:center;color:#718096;padding:20px;font-size:12px}
 </section>
 
 <section class="card">
+<h2>📷 Scan Lembar Jawaban (LJK)</h2>
+
+<p class="note">
+Gunakan kamera atau unggah foto LJK siswa untuk memulai proses pemindaian.
+</p>
+
+<div class="actions">
+<button onclick="startCamera()">Buka Kamera</button>
+<button class="secondary" onclick="document.getElementById('ljkFile').click()">
+Unggah Foto LJK
+</button>
+</div>
+
+<input
+type="file"
+id="ljkFile"
+accept="image/*"
+onchange="previewLJK(event)"
+style="display:none"
+>
+
+<div style="margin-top:15px">
+<video id="camera"
+autoplay
+playsinline
+style="display:none;width:100%;max-width:500px;border-radius:10px">
+</video>
+</div>
+
+<div class="actions">
+<button id="captureButton" onclick="captureLJK()" style="display:none">
+Ambil Foto LJK
+</button>
+<button class="secondary" onclick="stopCamera()">
+Tutup Kamera
+</button>
+</div>
+
+<div id="previewArea" style="display:none;margin-top:15px">
+<p><b>Pratinjau LJK:</b></p>
+<img id="ljkPreview"
+style="width:100%;max-width:500px;border:1px solid #ddd;border-radius:8px">
+
+<p id="scanStatus" class="note">
+Foto berhasil dimuat. Tahap pembacaan otomatis akan dikembangkan berikutnya.
+</p>
+</div>
+</section>
+
+<section class="card">
 <h2>📚 Rekap Nilai Murid</h2>
 <div class="actions" style="margin-top:0;margin-bottom:14px">
 <button onclick="exportCSV()">Unduh Rekap Excel (CSV)</button>
@@ -246,6 +296,86 @@ function exportCSV(){
  const a=document.createElement("a");
  a.href=url;a.download="Rekap_Nilai_SAS.csv";a.click();
  URL.revokeObjectURL(url);
+}
+
+let cameraStream = null;
+let currentLJK = null;
+
+async function startCamera(){
+ try{
+  const video=document.getElementById("camera");
+
+  cameraStream=await navigator.mediaDevices.getUserMedia({
+   video:{facingMode:"environment"},
+   audio:false
+  });
+
+  video.srcObject=cameraStream;
+  video.style.display="block";
+  document.getElementById("captureButton").style.display="inline-block";
+
+ }catch(error){
+  alert("Kamera tidak dapat dibuka. Periksa izin kamera atau gunakan unggah foto.");
+ }
+}
+
+function stopCamera(){
+ if(cameraStream){
+  cameraStream.getTracks().forEach(track=>track.stop());
+  cameraStream=null;
+ }
+
+ document.getElementById("camera").style.display="none";
+ document.getElementById("captureButton").style.display="none";
+}
+
+function previewLJK(event){
+ const file=event.target.files[0];
+ if(!file)return;
+
+ if(!file.type.startsWith("image/")){
+  alert("Silakan pilih file gambar.");
+  return;
+ }
+
+ currentLJK=file;
+ showLJK(file);
+}
+
+function captureLJK(){
+ const video=document.getElementById("camera");
+
+ if(!video.videoWidth){
+  alert("Kamera belum siap.");
+  return;
+ }
+
+ const canvas=document.createElement("canvas");
+ canvas.width=video.videoWidth;
+ canvas.height=video.videoHeight;
+
+ canvas.getContext("2d").drawImage(video,0,0);
+
+ canvas.toBlob(blob=>{
+  if(!blob){
+   alert("Gagal mengambil foto.");
+   return;
+  }
+
+  currentLJK=blob;
+  showLJK(blob);
+  stopCamera();
+ },"image/jpeg",0.95);
+}
+
+function showLJK(file){
+ const url=URL.createObjectURL(file);
+
+ document.getElementById("ljkPreview").src=url;
+ document.getElementById("previewArea").style.display="block";
+
+ document.getElementById("scanStatus").textContent=
+ "Foto berhasil dimuat. Siap untuk tahap pembacaan LJK.";
 }
 
 makeQuestions();
