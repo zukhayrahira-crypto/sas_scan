@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAS Scan - Koreksi LJK</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f5f9;color:#202938}
+header{background:#173b68;color:white;padding:24px 6%}
+header h1{margin:0;font-size:25px}
+header p{margin:7px 0 0;color:#d9e6f5}
+main{max-width:1050px;margin:25px auto;padding:0 16px}
+.card{background:white;border-radius:12px;padding:22px;margin-bottom:18px;box-shadow:0 2px 9px #0000000b}
+h2{font-size:18px;margin:0 0 18px;color:#173b68}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}
+label{display:block;font-size:13px;font-weight:bold;margin-bottom:7px}
+input,select{width:100%;padding:11px;border:1px solid #d5dce5;border-radius:7px;background:white;font-size:14px}
+button{border:0;border-radius:7px;padding:11px 17px;background:#1d5b99;color:white;cursor:pointer;font-weight:bold}
+button:hover{opacity:.88}
+.secondary{background:#e9eef5;color:#173b68}
+.danger{background:#b83d3d}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
+#answerKey,#studentAnswers{display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:10px}
+.question{background:#f5f7fa;padding:9px;border-radius:7px}
+.question span{font-size:12px;display:block;margin-bottom:6px;font-weight:bold}
+.question select{padding:8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:#edf3fa;padding:15px;border-radius:9px;text-align:center}
+.stat strong{font-size:24px;color:#174c80;display:block}
+.stat small{color:#526174}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:11px;border-bottom:1px solid #e5e9ef;text-align:left}
+th{background:#edf3fa}
+.table-wrap{overflow-x:auto}
+.note{font-size:13px;color:#64748b;line-height:1.6}
+footer{text-align:center;color:#718096;padding:20px;font-size:12px}
+@media(max-width:550px){.stats{grid-template-columns:1fr}header{padding:20px}}
+</style>
+</head>
+<body>
+
+<header>
+<h1>📋 SAS SCAN</h1>
+<p>Sistem Koreksi Lembar Jawaban Otomatis</p>
+</header>
+
+<main>
+
+<section class="card">
+<h2>⚙️ Pengaturan Asesmen</h2>
+<div class="grid">
+<div>
+<label>Jenjang</label>
+<select id="level">
+<option>SMP</option>
+<option>SD</option>
+<option>SMA</option>
+</select>
+</div>
+<div>
+<label>Kelas</label>
+<select id="kelas">
+<option>VII</option><option>VIII</option><option>IX</option>
+</select>
+</div>
+<div>
+<label>Mata Pelajaran</label>
+<input id="subject" value="Koding dan KA">
+</div>
+<div>
+<label>Jumlah Soal (1–50)</label>
+<input id="total" type="number" min="1" max="50" value="40">
+</div>
+</div>
+<div class="actions">
+<button onclick="makeQuestions()">Terapkan Pengaturan</button>
+</div>
+</section>
+
+<section class="card">
+<h2>📝 Kunci Jawaban</h2>
+<p class="note">Tentukan jawaban benar untuk setiap nomor soal.</p>
+<div id="answerKey"></div>
+</section>
+
+<section class="card">
+<h2>👨‍🎓 Koreksi Jawaban Murid</h2>
+<div class="grid">
+<div>
+<label>Nama Murid</label>
+<input id="studentName" placeholder="Masukkan nama murid">
+</div>
+<div>
+<label>Kelas</label>
+<input id="studentClass" placeholder="Contoh: VII A">
+</div>
+</div>
+<p class="note">Masukkan jawaban murid sesuai nomor soal.</p>
+<div id="studentAnswers"></div>
+<div class="actions">
+<button onclick="correctAnswers()">Koreksi dan Hitung Nilai</button>
+<button class="secondary" onclick="clearStudent()">Kosongkan Jawaban</button>
+</div>
+</section>
+
+<section class="card" id="result" style="display:none">
+<h2>📊 Hasil Koreksi</h2>
+<div class="stats">
+<div class="stat"><strong id="correctCount">0</strong><small>Benar</small></div>
+<div class="stat"><strong id="wrongCount">0</strong><small>Salah/Kosong</small></div>
+<div class="stat"><strong id="score">0</strong><small>Nilai Akhir</small></div>
+</div>
+</section>
+
+<section class="card">
+<h2>📚 Rekap Nilai Murid</h2>
+<div class="actions" style="margin-top:0;margin-bottom:14px">
+<button onclick="exportCSV()">Unduh Rekap Excel (CSV)</button>
+<button class="danger" onclick="clearAll()">Hapus Semua Rekap</button>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Nama</th><th>Kelas</th><th>Benar</th><th>Salah</th><th>Nilai</th>
+</tr>
+</thead>
+<tbody id="records"></tbody>
+</table>
+</div>
+<p class="note">Rekap tersimpan di penyimpanan browser perangkat ini.</p>
+</section>
+
+</main>
+
+<footer>SAS Scan © 2026 | Sistem Asesmen Sekolah</footer>
+
+<script>
+const choices=["A","B","C","D"];
+let total=40;
+let key=[];
+let records=JSON.parse(localStorage.getItem("sasRecords")||"[]");
+
+function makeQuestions(){
+ const n=Number(document.getElementById("total").value);
+ if(!Number.isInteger(n)||n<1||n>50){
+  alert("Jumlah soal harus antara 1 sampai 50.");
+  return;
+ }
+ total=n;
+ key=Array.from({length:total},(_,i)=>key[i]||"");
+ document.getElementById("answerKey").innerHTML="";
+ document.getElementById("studentAnswers").innerHTML="";
+ for(let i=0;i<total;i++){
+  document.getElementById("answerKey").appendChild(makeSelect(i,key[i],"Kunci"));
+  document.getElementById("studentAnswers").appendChild(makeSelect(i,"","Jawaban"));
+ }
+ document.getElementById("result").style.display="none";
+}
+
+function makeSelect(i,value,type){
+ const box=document.createElement("div");
+ box.className="question";
+ const label=document.createElement("span");
+ label.textContent="Nomor "+(i+1);
+ const select=document.createElement("select");
+ select.dataset.number=i;
+ select.dataset.type=type;
+ select.innerHTML='<option value="">Pilih</option>'+
+ choices.map(c=>`<option value="${c}">${c}</option>`).join("");
+ select.value=value;
+ if(type==="Kunci"){
+  select.addEventListener("change",()=>key[i]=select.value);
+ }
+ box.append(label,select);
+ return box;
+}
+
+function correctAnswers(){
+ const name=document.getElementById("studentName").value.trim();
+ const kelas=document.getElementById("studentClass").value.trim();
+ if(!name){alert("Masukkan nama murid.");return}
+ if(key.some(v=>!v)){alert("Lengkapi semua kunci jawaban.");return}
+ const answers=[...document.querySelectorAll('#studentAnswers select')].map(s=>s.value);
+ if(answers.some(v=>!v)){alert("Lengkapi semua jawaban murid.");return}
+ let correct=0;
+ answers.forEach((a,i)=>{if(a===key[i])correct++});
+ const wrong=total-correct;
+ const score=Math.round(correct/total*100*100)/100;
+ document.getElementById("correctCount").textContent=correct;
+ document.getElementById("wrongCount").textContent=wrong;
+ document.getElementById("score").textContent=score;
+ document.getElementById("result").style.display="block";
+ records.push({
+  name,kelas,correct,wrong,score,
+  subject:document.getElementById("subject").value,
+  level:document.getElementById("level").value,
+  date:new Date().toLocaleDateString("id-ID")
+ });
+ saveRecords();
+ renderRecords();
+}
+
+function saveRecords(){
+ localStorage.setItem("sasRecords",JSON.stringify(records));
+}
+
+function renderRecords(){
+ document.getElementById("records").innerHTML=records.map(r=>
+ `<tr><td>${escapeHTML(r.name)}</td><td>${escapeHTML(r.kelas)}</td><td>${r.correct}</td><td>${r.wrong}</td><td>${r.score}</td></tr>`
+ ).join("");
+}
+
+function escapeHTML(value){
+ return String(value).replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",
+  '"':"&quot;","'":"&#39;"
+ }[c]));
+}
+
+function clearStudent(){
+ document.getElementById("studentName").value="";
+ document.getElementById("studentClass").value="";
+ document.querySelectorAll("#studentAnswers select").forEach(s=>s.value="");
+ document.getElementById("result").style.display="none";
+}
+
+function clearAll(){
+ if(confirm("Hapus seluruh rekap nilai?")){
+  records=[];
+  saveRecords();
+  renderRecords();
+ }
+}
+
+function exportCSV(){
+ if(!records.length){alert("Belum ada rekap nilai.");return}
+ const rows=[
+ ["Nama","Kelas","Mata Pelajaran","Jenjang","Benar","Salah","Nilai","Tanggal"],
+ ...records.map(r=>[r.name,r.kelas,r.subject,r.level,r.correct,r.wrong,r.score,r.date])
+ ];
+ const csv="\uFEFF"+rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(";")).join("\r\n");
+ const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download="Rekap_Nilai_SAS.csv";a.click();
+ URL.revokeObjectURL(url);
+}
+
+makeQuestions();
+renderRecords();
+</script>
+
+</body>
+</html>
