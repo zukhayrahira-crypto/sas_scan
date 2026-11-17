@@ -396,62 +396,16 @@ function showLJK(file){
  document.getElementById("scanStatus").textContent=
  "Foto berhasil dimuat. Siap untuk tahap pembacaan LJK.";
 }
+function deleteLJK(){
+ currentLJK = null;
 
- let bubbles = "";
+ document.getElementById("ljkPreview").src = "";
+ document.getElementById("previewArea").style.display = "none";
+ document.getElementById("ljkFile").value = "";
 
- for(let i=1;i<=40;i++){
-  bubbles += `
-   <div class="question">
-    <span>${i}.</span>
-    ${["A","B","C","D","E"].map(c =>
-     `<span class="bubble">${c}</span>`
-    ).join("")}
-   </div>
-  `;
- }
-
- printWindow.document.write(`
- <!DOCTYPE html>
- <html lang="id">
- <head>
- <meta charset="UTF-8">
- <title>LJK SAS Scan</title>
- <style>
- @page{size:A4;margin:12mm}
- body{font-family:Arial,sans-serif;color:#000}
- h2{text-align:center;margin-bottom:5px}
- p{text-align:center;margin-top:0}
- .identity{margin:25px 0;line-height:2}
- .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 25px}
- .question{display:flex;align-items:center;gap:9px;font-size:13px;height:27px}
- .question>span:first-child{width:22px;font-weight:bold}
- .bubble{
-  width:20px;height:20px;border:1.5px solid black;
-  border-radius:50%;display:inline-flex;
-  justify-content:center;align-items:center;
-  font-size:10px
- }
- .note{font-size:11px;margin-top:20px}
- </style>
- </head>
- <body>
- <h2>LEMBAR JAWABAN KOMPUTER (LJK)</h2>
- <p>SUMATIF AKHIR SEKOLAH</p>
- <div class="identity">
- Nama: ..........................................................<br>
- Kelas: ............................ Mata Pelajaran: ............................
- </div>
- <div class="grid">${bubbles}</div>
- <p class="note">Petunjuk: Hitamkan bulatan jawaban pilihan A, B, C, D, atau E dengan pensil.</p>
- </body>
- </html>
- `);
-
- printWindow.document.close();
- printWindow.focus();
- printWindow.print();
+ document.getElementById("scanStatus").textContent =
+ "Foto LJK berhasil dihapus.";
 }
-
 function waitForOpenCV(){
  return new Promise((resolve,reject)=>{
   const started=Date.now();
